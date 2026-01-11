@@ -1,0 +1,16 @@
+# stage1 (where we have a slim with linux distribution)
+FROM python:3.9-slim AS base
+WORKDIR /app
+COPY . .
+COPY requirements.txt . 
+RUN pip install --no-cache-dir -r requirements.txt --target=/app/deps
+# stage2 (where we have just the code and the code dependencies without linux distribution)
+FROM gcr.io/distroless/python3-debian12
+WORKDIR /app
+COPY --from=base /app/deps /app/deps
+COPY --from=base /app /app
+ENV PYTHONPATH=/app/deps
+EXPOSE 80
+COPY . .
+CMD ["app.py"]
+
